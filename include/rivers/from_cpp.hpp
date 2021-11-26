@@ -1,8 +1,10 @@
 #ifndef RIVERS_FROM_CPP_HPP
 #define RIVERS_FROM_CPP_HPP
 
-#include <rivers/core.hpp>
 #include <ranges>
+#include <rivers/core.hpp>
+#include <rivers/tag_invoke.hpp>
+
 
 namespace rvr {
 
@@ -34,14 +36,9 @@ public:
     }
 };
 
-struct {
-    template <std::input_iterator I, std::sentinel_for<I> S>
-    constexpr auto operator()(I first, S last) const {
-        return FromCpp(std::ranges::subrange(std::move(first), std::move(last)));
-    }
-
+struct from_cpp_fn {
     template <std::ranges::input_range R>
-    constexpr auto operator()(R&& r) const {
+    friend constexpr auto tag_invoke(from_cpp_fn, R&& r) {
         using U = std::remove_cvref_t<R>;
         if constexpr (std::ranges::view<R>) {
             return FromCpp<U>(RVR_FWD(r));
@@ -50,6 +47,17 @@ struct {
         } else {
             return FromCpp(RVR_FWD(r));
         }
+    }
+
+    template <typename R>
+        requires tag_invocable<from_cpp_fn, R>
+    constexpr auto operator()(R&& r) const {
+        return rvr::tag_invoke(*this, RVR_FWD(r));
+    }
+
+    template <std::input_iterator I, std::sentinel_for<I> S>
+    constexpr auto operator()(I first, S last) const {
+        return FromCpp(std::ranges::subrange(std::move(first), std::move(last)));
     }
 } inline constexpr from_cpp;
 
