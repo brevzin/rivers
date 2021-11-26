@@ -2,6 +2,7 @@
 #define RIVERS_RIVERS_HPP
 
 #include <concepts>
+#include <ranges>
 
 #define RVR_FWD(x) static_cast<decltype(x)&&>(x)
 
@@ -97,7 +98,7 @@ namespace rvr {
             return self().for_each([](bool b){ return b; });
         }
 
-        // all(p)
+        // all(pred)
         // * Returns: (... and pred(elems))
         template <typename Pred>
             requires std::predicate<Pred&, reference_t<Derived>>
@@ -116,12 +117,30 @@ namespace rvr {
             return not self().for_each([](bool b){ return not b; });
         }
 
+        // any(pred)
+        // * Returns: (... or pred(elems))
+        template <typename Pred>
+            requires std::predicate<Pred&, reference_t<Derived>>
+        constexpr auto any(Pred pred) -> bool
+        {
+            return not self().all(std::not_fn(pred));
+        }
+
         // none()
-        // * Returns: not all()
+        // * Returns: not any()
         constexpr auto none() -> bool
             requires std::convertible_to<reference_t<Derived>, bool>
         {
-            return not all();
+            return not any();
+        }
+
+        // none(pred)
+        // * Returns: not any(pred)
+        template <typename Pred>
+            requires std::predicate<Pred&, reference_t<Derived>>
+        constexpr auto none(Pred pred) -> bool
+        {
+            return not self().any(pred);
         }
 
         // fold(init, op)
@@ -157,12 +176,14 @@ namespace rvr {
 
     };
 
+    ////////////////////////////////////////////////////////////////////////////
     // Python-style range.
     // range(3, 5) includes the elements [3, 4]
     // range(5) includes the elements [0, 1, 2, 3, 4]
     // Always multipass
     // Like std::views::iota, except that range(e) are the elements in [E(), e)
     // rather than the  being the elements in [e, inf)
+    ////////////////////////////////////////////////////////////////////////////
     template <std::weakly_incrementable I>
         requires std::equality_comparable<I>
     struct Range : RiverBase<Range<I>>
@@ -172,11 +193,11 @@ namespace rvr {
         I to;
 
     public:
-        constexpr Range(I from, I to) : from(from), to(to) { }
-        constexpr Range(I to) requires std::default_initializable<I> : to(to) { }
-
         static constexpr bool multipass = true;
         using reference = I;
+
+        constexpr Range(I from, I to) : from(from), to(to) { }
+        constexpr Range(I to) requires std::default_initializable<I> : to(to) { }
 
         constexpr auto for_each(PredicateFor<reference> auto&& pred) -> bool {
             for (I i = from; i != to; ++i) {
@@ -201,6 +222,83 @@ namespace rvr {
             return Range(std::move(to));
         }
     } inline constexpr range;
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Converting a C++ Range to a River
+    ////////////////////////////////////////////////////////////////////////////
+    template <std::ranges::input_range R>
+    struct FromCpp : RiverBase<FromCpp<R>>
+    {
+    private:
+        R base;
+
+    public:
+        static constexpr bool multipass = std::ranges::forward_range<R>;
+        using reference = std::ranges::range_reference_t<R>;
+
+        constexpr FromCpp(R&& r) : base(std::move(r)) { }
+
+        constexpr auto for_each(PredicateFor<reference> auto&& pred) -> bool {
+            auto it = std::ranges::begin(base);
+            auto end = std::ranges::end(base);
+            for (; it != end; ++it) {
+                if (not std::invoke(pred, *it)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    };
+
+    struct {
+        template <std::input_iterator I, std::sentinel_for<I> S>
+        constexpr auto operator()(I first, S last) const {
+            return FromCpp(std::ranges::subrange(std::move(first), std::move(last)));
+        }
+
+        template <std::ranges::input_range R>
+        constexpr auto operator()(R&& r) const {
+            using U = std::remove_cvref_t<R>;
+            if constexpr (std::ranges::view<R>) {
+                return FromCpp<U>(RVR_FWD(r));
+            } else if constexpr (std::is_lvalue_reference_v<R>) {
+                return FromCpp(std::ranges::ref_view(r));
+            } else {
+                return FromCpp(RVR_FWD(r));
+            }
+        }
+    } inline constexpr from_cpp;
+
+    ////////////////////////////////////////////////////////////////////////////
+    // map: takes a (RiverOf<T>, T -> U) and produces a RiverOf<U>
+    ////////////////////////////////////////////////////////////////////////////
+    template <River R, typename F>
+        requires std::regular_invocable<F&, reference_t<R>>
+    struct Map : RiverBase<Map<R, F>> {
+    private:
+        R base;
+        F f;
+
+    public:
+        using reference = std::invoke_result_t<F&, reference_t<R>>;
+        static constexpr bool multipass = multipass<R>;
+
+        Map(R base, F f) : base(std::move(base)), f(std::move(f)) { }
+
+        constexpr auto for_each(PredicateFor<reference> auto&& pred) -> bool {
+            return base.for_each([&](reference e){
+                return std::invoke(pred, std::invoke(f, RVR_FWD(e)));
+            });
+        }
+    };
+
+    struct {
+        template <River R, typename F>
+            requires std::regular_invocable<F&, reference_t<R>>
+        constexpr auto operator()(R&& base, F&& f) const {
+            return Map(RVR_FWD(base), RVR_FWD(f));
+        }
+    } inline constexpr map;
 }
 
 
