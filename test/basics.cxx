@@ -17,8 +17,8 @@ static_assert(not rvr::multipass<Ints>);
 static_assert(rvr::River<Ints&>);
 static_assert(not rvr::River<Ints const&>);
 
-TEST_CASE("range") {
-    auto ints = rvr::range(1, 10);
+TEST_CASE("seq") {
+    auto ints = rvr::seq(1, 10);
 
     CHECK(ints.all());
     CHECK_FALSE(ints.all([](int i){ return i % 2 == 0; }));
@@ -31,7 +31,7 @@ TEST_CASE("range") {
     CHECK(ints.sum() == 45);
     CHECK(ints.product() == 362880);
 
-    constexpr int s = rvr::range(100).sum();
+    constexpr int s = rvr::seq(100).sum();
     CHECK(s == 4950);
 }
 
@@ -56,6 +56,6 @@ TEST_CASE("input range") {
 }
 
 TEST_CASE("map") {
-    auto squares = rvr::range(1, 5)._(rvr::map, [](int i){ return i*i; });
+    auto squares = rvr::seq(1, 5)._(rvr::map, [](int i){ return i*i; });
     CHECK(squares.sum() == 30);
 }

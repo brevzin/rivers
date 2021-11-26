@@ -48,7 +48,7 @@ namespace rvr {
     };
 
     template <typename R>
-    using value_type_t = typename value_type_for<std::remove_cvref_t<R>>::type;
+    using value_t = typename value_type_for<std::remove_cvref_t<R>>::type;
 
     template <typename R>
     inline constexpr bool multipass = false;
@@ -177,32 +177,32 @@ namespace rvr {
         // sum()
         // * Returns (value() + ... + elems)
         template <typename D=Derived>
-        constexpr auto sum() -> value_type_t<D>
+        constexpr auto sum() -> value_t<D>
         {
-            return fold(value_type_t<D>(), std::plus());
+            return fold(value_t<D>(), std::plus());
         }
 
         // product()
         // * Returns (value(1) * ... * elems)
         template <typename D=Derived>
-        constexpr auto product() -> value_type_t<D>
+        constexpr auto product() -> value_t<D>
         {
-            return fold(value_type_t<D>(1), std::multiplies());
+            return fold(value_t<D>(1), std::multiplies());
         }
 
     };
 
     ////////////////////////////////////////////////////////////////////////////
     // Python-style range.
-    // range(3, 5) includes the elements [3, 4]
-    // range(5) includes the elements [0, 1, 2, 3, 4]
+    // seq(3, 5) includes the elements [3, 4]
+    // seq(5) includes the elements [0, 1, 2, 3, 4]
     // Always multipass
-    // Like std::views::iota, except that range(e) are the elements in [E(), e)
+    // Like std::views::iota, except that seq(e) are the elements in [E(), e)
     // rather than the  being the elements in [e, inf)
     ////////////////////////////////////////////////////////////////////////////
     template <std::weakly_incrementable I>
         requires std::equality_comparable<I>
-    struct Range : RiverBase<Range<I>>
+    struct Seq : RiverBase<Seq<I>>
     {
     private:
         I from = I();
@@ -212,8 +212,8 @@ namespace rvr {
         static constexpr bool multipass = true;
         using reference = I;
 
-        constexpr Range(I from, I to) : from(from), to(to) { }
-        constexpr Range(I to) requires std::default_initializable<I> : to(to) { }
+        constexpr Seq(I from, I to) : from(from), to(to) { }
+        constexpr Seq(I to) requires std::default_initializable<I> : to(to) { }
 
         constexpr auto while_(PredicateFor<reference> auto&& pred) -> bool {
             for (I i = from; i != to; ++i) {
@@ -228,16 +228,16 @@ namespace rvr {
     struct {
         template <std::weakly_incrementable I> requires std::equality_comparable<I>
         constexpr auto operator()(I from, I to) const {
-            return Range(std::move(from), std::move(to));
+            return Seq(std::move(from), std::move(to));
         }
 
         template <std::weakly_incrementable I>
             requires std::equality_comparable<I>
                   && std::default_initializable<I>
         constexpr auto operator()(I to) const {
-            return Range(std::move(to));
+            return Seq(std::move(to));
         }
-    } inline constexpr range;
+    } inline constexpr seq;
 
     ////////////////////////////////////////////////////////////////////////////
     // Converting a C++ Range to a River
@@ -251,6 +251,7 @@ namespace rvr {
     public:
         static constexpr bool multipass = std::ranges::forward_range<R>;
         using reference = std::ranges::range_reference_t<R>;
+        using value_type = std::ranges::range_value_t<R>;
 
         constexpr FromCpp(R&& r) : base(std::move(r)) { }
 
