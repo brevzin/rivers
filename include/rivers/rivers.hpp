@@ -8,7 +8,7 @@
 
 namespace rvr {
     template <typename R>
-    using reference_t = typename R::reference;
+    using reference_t = typename std::remove_cvref_t<R>::reference;
 
     template <typename T>
     struct value_type_from_ref_t {
@@ -48,7 +48,7 @@ namespace rvr {
     };
 
     template <typename R>
-    using value_type_t = typename value_type_for<R>::type;
+    using value_type_t = typename value_type_for<std::remove_cvref_t<R>>::type;
 
     template <typename R>
     inline constexpr bool multipass = false;

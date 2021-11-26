@@ -14,6 +14,8 @@ struct Ints {
 static_assert(rvr::River<Ints>);
 static_assert(std::same_as<rvr::reference_t<Ints>, int>);
 static_assert(not rvr::multipass<Ints>);
+static_assert(rvr::River<Ints&>);
+static_assert(not rvr::River<Ints const&>);
 
 TEST_CASE("range") {
     auto ints = rvr::range(1, 10);
