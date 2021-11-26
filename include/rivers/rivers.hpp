@@ -59,7 +59,7 @@ namespace rvr {
     template <typename R>
     concept River = requires (R r) {
         typename reference_t<R>;
-        { r.for_each(std::declval<bool(*)(reference_t<R>)>()) } -> std::same_as<bool>;
+        { r.while_(std::declval<bool(*)(reference_t<R>)>()) } -> std::same_as<bool>;
     };
 
     // std::predicate requires regular_invocable but we don't need that
@@ -102,7 +102,7 @@ namespace rvr {
         constexpr auto all() -> bool
             requires std::convertible_to<reference_t<Derived>, bool>
         {
-            return self().for_each([](bool b){ return b; });
+            return self().while_([](bool b){ return b; });
         }
 
         // all(pred)
@@ -111,7 +111,7 @@ namespace rvr {
             requires std::predicate<Pred&, reference_t<Derived>>
         constexpr auto all(Pred pred) -> bool
         {
-            return self().for_each([&](reference_t<Derived> e) -> bool {
+            return self().while_([&](reference_t<Derived> e) -> bool {
                 return std::invoke(pred, e);
             });
         }
@@ -121,7 +121,7 @@ namespace rvr {
         constexpr auto any() -> bool
             requires std::convertible_to<reference_t<Derived>, bool>
         {
-            return not self().for_each([](bool b){ return not b; });
+            return not self().while_([](bool b){ return not b; });
         }
 
         // any(pred)
@@ -150,6 +150,16 @@ namespace rvr {
             return not self().any(pred);
         }
 
+        // for_each(op)
+        // Equivalent to (op(elem), ...);
+        template <typename F> requires std::invocable<F&, reference_t<Derived>>
+        constexpr void for_each(F&& f) {
+            self().while_([&](reference_t<Derived> e){
+                std::invoke(f, e);
+                return true;
+            });
+        }
+
         // fold(init, op)
         // a left-fold that performs op(op(op(init, e0), e1), ...
         template <typename Z, typename F>
@@ -158,9 +168,8 @@ namespace rvr {
             }
         constexpr auto fold(Z init, F op) -> Z
         {
-            self().for_each([&](reference_t<Derived> e){
+            for_each([&](reference_t<Derived> e){
                 init = op(std::move(init), RVR_FWD(e));
-                return true;
             });
             return init;
         }
@@ -206,7 +215,7 @@ namespace rvr {
         constexpr Range(I from, I to) : from(from), to(to) { }
         constexpr Range(I to) requires std::default_initializable<I> : to(to) { }
 
-        constexpr auto for_each(PredicateFor<reference> auto&& pred) -> bool {
+        constexpr auto while_(PredicateFor<reference> auto&& pred) -> bool {
             for (I i = from; i != to; ++i) {
                 if (not std::invoke(pred, I(i))) {
                     return false;
@@ -245,7 +254,7 @@ namespace rvr {
 
         constexpr FromCpp(R&& r) : base(std::move(r)) { }
 
-        constexpr auto for_each(PredicateFor<reference> auto&& pred) -> bool {
+        constexpr auto while_(PredicateFor<reference> auto&& pred) -> bool {
             auto it = std::ranges::begin(base);
             auto end = std::ranges::end(base);
             for (; it != end; ++it) {
@@ -292,8 +301,8 @@ namespace rvr {
 
         Map(R base, F f) : base(std::move(base)), f(std::move(f)) { }
 
-        constexpr auto for_each(PredicateFor<reference> auto&& pred) -> bool {
-            return base.for_each([&](reference e){
+        constexpr auto while_(PredicateFor<reference> auto&& pred) -> bool {
+            return base.while_([&](reference e){
                 return std::invoke(pred, std::invoke(f, RVR_FWD(e)));
             });
         }

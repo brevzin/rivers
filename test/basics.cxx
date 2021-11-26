@@ -9,7 +9,7 @@ static_assert(not rvr::River<S>);
 struct Ints {
     using reference = int;
 
-    auto for_each(rvr::PredicateFor<int> auto&& f) -> bool;
+    auto while_(rvr::PredicateFor<int> auto&& f) -> bool;
 };
 static_assert(rvr::River<Ints>);
 static_assert(std::same_as<rvr::reference_t<Ints>, int>);
