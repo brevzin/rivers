@@ -54,3 +54,8 @@ TEST_CASE("input range") {
     CHECK_FALSE(rvr::multipass<decltype(r)>);
     CHECK(r.sum() == 15);
 }
+
+TEST_CASE("map") {
+    auto squares = rvr::range(1, 5)._(rvr::map, [](int i){ return i*i; });
+    CHECK(squares.sum() == 30);
+}
