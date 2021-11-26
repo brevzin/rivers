@@ -58,4 +58,8 @@ TEST_CASE("input range") {
 TEST_CASE("map") {
     auto squares = rvr::seq(1, 5)._(rvr::map, [](int i){ return i*i; });
     CHECK(squares.sum() == 30);
+
+    auto squares2 = rvr::seq(1, 5).map([](int i){ return i*i; });
+    CHECK(squares2.product() == 576);
+
 }
