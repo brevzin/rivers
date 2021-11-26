@@ -35,7 +35,14 @@ namespace rvr {
     };
 
     template <typename R>
-        requires requires { typename R::value_type; }
+        // only use R::value_type if it's not remove_cvref_t<reference>
+        // (i.e. in the case that it's actually meaningful)
+        // Otherwise, value_type_from_ref will do the remove_cvref_t part itself
+        requires requires {
+            typename R::value_type;
+            requires not std::same_as<typename R::value_type,
+                                      std::remove_cvref_t<reference_t<R>>>;
+        }
     struct value_type_for<R> {
         using type = typename R::value_type;
     };
