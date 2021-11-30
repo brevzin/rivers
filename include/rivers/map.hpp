@@ -25,6 +25,10 @@ public:
             return std::invoke(pred, std::invoke(f, RVR_FWD(e)));
         });
     }
+
+    void reset() requires ResettableRiver<R> {
+        base.reset();
+    }
 };
 
 struct {

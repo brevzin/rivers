@@ -10,6 +10,9 @@ namespace rvr {
 
 ////////////////////////////////////////////////////////////////////////////
 // Converting a C++ Range to a River
+// * from_cpp(r)           for a range
+// * from_cpp(first, last) for an iterator/sentinel pair
+// The resulting river is resettable if the source range is forward or better
 ////////////////////////////////////////////////////////////////////////////
 template <std::ranges::input_range R>
 struct FromCpp : RiverBase<FromCpp<R>>
@@ -35,7 +38,7 @@ public:
         return true;
     }
 
-    void reset() {
+    void reset() requires std::ranges::forward_range<R> {
         it = std::ranges::begin(base);
     }
 };
