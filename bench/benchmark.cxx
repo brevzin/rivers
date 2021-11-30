@@ -1,7 +1,8 @@
 #define ANKERL_NANOBENCH_IMPLEMENT
-#include <nanobench.h>
 #include <ranges>
 #include <rivers/rivers.hpp>
+#include "nanobench.h"
+#include "flow.hpp"
 
 int main() {
     namespace an = ankerl::nanobench;
@@ -42,6 +43,14 @@ int main() {
     bench.run("transform_filter_rivers",
         [&]{
             auto r = rvr::from_cpp(bunch_of_ints)
+                   .map(triple)
+                   .filter(is_even);
+            an::doNotOptimizeAway(r.sum());
+        });
+
+    bench.run("transform_filter_flow",
+        [&]{
+            auto r = flow::from(bunch_of_ints)
                    .map(triple)
                    .filter(is_even);
             an::doNotOptimizeAway(r.sum());
