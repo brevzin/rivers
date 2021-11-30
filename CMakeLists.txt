@@ -11,4 +11,5 @@ add_library(rivers INTERFACE)
 add_library(rivers::rivers ALIAS rivers)
 target_include_directories(rivers INTERFACE include)
 
+add_subdirectory(bench)
 add_subdirectory(test)
