@@ -17,6 +17,7 @@ int main() {
     auto is_even = [](int x) { return x % 2 == 0; };
     auto triple = [](int x) { return 3 * x; };
 
+    bench.relative(true);
     bench.run("transform_filter_handwritten",
         [&]{
             int res = 0;
