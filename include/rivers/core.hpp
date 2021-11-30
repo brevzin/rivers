@@ -3,13 +3,21 @@
 
 #include <concepts>
 #include <ranges>
+#include <rivers/optional.hpp>
 
 #define RVR_FWD(x) static_cast<decltype(x)&&>(x)
 
 namespace rvr {
+    // A River's reference type is R::reference. This must be provided
     template <typename R>
     using reference_t = typename std::remove_cvref_t<R>::reference;
 
+    ////////////////////////////////////////////////////////////////////////////
+    // A river's value_type is more complicated.
+    // If R::value_type is not simply remove_cvref_t<R::reference>, then that.
+    // Otherwise, value_type_from_ref_t<rR::reference>, could simply be
+    // remove_cvref_t but also recognizes pair and tuple - that tuple<T&>'s
+    // value type should be tuple<T>, not simply tuple<T&>
     template <typename T>
     struct value_type_from_ref_t {
         using type = std::remove_cvref_t<T>;
@@ -49,12 +57,8 @@ namespace rvr {
 
     template <typename R>
     using value_t = typename value_type_for<std::remove_cvref_t<R>>::type;
+    ////////////////////////////////////////////////////////////////////////////
 
-    template <typename R>
-    inline constexpr bool multipass = false;
-
-    template <typename R> requires requires { R::multipass; }
-    inline constexpr bool multipass<R> = R::multipass;
 
     template <typename R>
     concept River = requires (R r) {
@@ -70,6 +74,42 @@ namespace rvr {
     concept PredicateFor = std::invocable<F&, R>
                         && std::convertible_to<std::invoke_result_t<F&, R>, bool>;
 
+
+    // A River is reset-able if it has a member reset().
+    // reset() returns the River to the beginning (i.e. its source?)
+    // Such a function should only be provided if it's cheap to do so - or at
+    // least cheaper than stashing a copy of the original River before any
+    // mutating operations and then restoring it
+    template <typename R>
+    concept ResettableRiver = River<R> && requires (R r) {
+            r.reset();
+        };
+
+
+    // simple scope guard implementation - since we're only ever capturing
+    // by reference, construction can't throw, so can skip a lot of steps
+    namespace detail {
+        enum class scope_exit_tag { };
+
+        template <typename F>
+        struct ScopeExit {
+            F func;
+            constexpr ~ScopeExit() noexcept { func(); }
+        };
+
+
+        template <typename F>
+        constexpr auto operator+(scope_exit_tag, F f) {
+            return ScopeExit<F>{.func=RVR_FWD(f)};
+        }
+    }
+
+    #define RVR_CONCAT2(x, y) x ## y
+    #define RVR_CONCAT(x, y) RVR_CONCAT2(x, y)
+    #define RVR_UNIQUE_NAME(prefix) RVR_CONCAT(prefix, __LINE__)
+    #define RVR_SCOPE_EXIT                           \
+        auto RVR_UNIQUE_NAME(RVR_SCOPE_EXIT_GUARD) = \
+        ::rvr::detail::scope_exit_tag{} + [&]() noexcept -> void
 
     template <typename Derived>
     struct RiverBase {
@@ -99,17 +139,11 @@ namespace rvr {
 
         // all()
         // * Returns: (... and elems)
-        constexpr auto all() -> bool
-            requires std::convertible_to<reference_t<Derived>, bool>
-        {
-            return self().while_([](bool b){ return b; });
-        }
-
         // all(pred)
         // * Returns: (... and pred(elems))
-        template <typename Pred>
+        template <typename Pred = std::identity>
             requires std::predicate<Pred&, reference_t<Derived>>
-        constexpr auto all(Pred pred) -> bool
+        constexpr auto all(Pred pred = {}) -> bool
         {
             return self().while_([&](reference_t<Derived> e) -> bool {
                 return std::invoke(pred, e);
@@ -118,34 +152,22 @@ namespace rvr {
 
         // any()
         // * Returns (... or elems)
-        constexpr auto any() -> bool
-            requires std::convertible_to<reference_t<Derived>, bool>
-        {
-            return not self().while_([](bool b){ return not b; });
-        }
-
         // any(pred)
         // * Returns: (... or pred(elems))
-        template <typename Pred>
+        template <typename Pred = std::identity>
             requires std::predicate<Pred&, reference_t<Derived>>
-        constexpr auto any(Pred pred) -> bool
+        constexpr auto any(Pred pred = {}) -> bool
         {
             return not self().all(std::not_fn(pred));
         }
 
         // none()
         // * Returns: not any()
-        constexpr auto none() -> bool
-            requires std::convertible_to<reference_t<Derived>, bool>
-        {
-            return not any();
-        }
-
         // none(pred)
         // * Returns: not any(pred)
-        template <typename Pred>
+        template <typename Pred = std::identity>
             requires std::predicate<Pred&, reference_t<Derived>>
-        constexpr auto none(Pred pred) -> bool
+        constexpr auto none(Pred pred = {}) -> bool
         {
             return not self().any(pred);
         }
@@ -158,6 +180,30 @@ namespace rvr {
                 std::invoke(f, e);
                 return true;
             });
+        }
+
+        // next()
+        // * Return the next value from this river, or nullopt if none such
+        // next_ref()
+        // * Return the next reference from this river, or nullopt if none such
+        template <typename D=Derived>
+        constexpr auto next() -> tl::optional<value_t<D>> {
+            tl::optional<value_t<D>> result;
+            self().while_([&](reference_t<D> elem){
+                result.emplace(RVR_FWD(elem));
+                return false;
+            });
+            return result;
+        }
+
+        template <typename D=Derived>
+        constexpr auto next_ref() -> tl::optional<reference_t<D>> {
+            tl::optional<reference_t<D>> result;
+            self().while_([&](reference_t<D> elem){
+                result.emplace(RVR_FWD(elem));
+                return false;
+            });
+            return result;
         }
 
         // fold(init, op)

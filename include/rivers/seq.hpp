@@ -9,7 +9,6 @@ namespace rvr {
 // Python-style range.
 // seq(3, 5) includes the elements [3, 4]
 // seq(5) includes the elements [0, 1, 2, 3, 4]
-// Always multipass
 // Like std::views::iota, except that seq(e) are the elements in [E(), e)
 // rather than the  being the elements in [e, inf)
 ////////////////////////////////////////////////////////////////////////////
@@ -22,15 +21,15 @@ private:
     I to;
 
 public:
-    static constexpr bool multipass = true;
     using reference = I;
 
     constexpr Seq(I from, I to) : from(from), to(to) { }
     constexpr Seq(I to) requires std::default_initializable<I> : to(to) { }
 
     constexpr auto while_(PredicateFor<reference> auto&& pred) -> bool {
-        for (I i = from; i != to; ++i) {
-            if (not std::invoke(pred, I(i))) {
+        while (from != to) {
+            RVR_SCOPE_EXIT { ++from; };
+            if (not std::invoke(pred, I(from))) {
                 return false;
             }
         }

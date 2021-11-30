@@ -16,18 +16,18 @@ struct FromCpp : RiverBase<FromCpp<R>>
 {
 private:
     R base;
+    std::ranges::iterator_t<R> it = std::ranges::begin(base);
+    std::ranges::sentinel_t<R> end = std::ranges::end(base);
 
 public:
-    static constexpr bool multipass = std::ranges::forward_range<R>;
     using reference = std::ranges::range_reference_t<R>;
     using value_type = std::ranges::range_value_t<R>;
 
     constexpr FromCpp(R&& r) : base(std::move(r)) { }
 
     constexpr auto while_(PredicateFor<reference> auto&& pred) -> bool {
-        auto it = std::ranges::begin(base);
-        auto end = std::ranges::end(base);
-        for (; it != end; ++it) {
+        while (it != end) {
+            RVR_SCOPE_EXIT { ++it; };
             if (not std::invoke(pred, *it)) {
                 return false;
             }
