@@ -236,6 +236,9 @@ namespace rvr {
             return fold(RVR_FWD(init), std::multiplies());
         }
 
+        // ref(): requires ref.hpp
+        constexpr auto ref() &;
+
         // map(f): requires map.hpp
         template <typename F> constexpr auto map(F&& f) &;
         template <typename F> constexpr auto map(F&& f) &&;
@@ -247,6 +250,14 @@ namespace rvr {
         // chain(p...): requires chain.hpp
         template <River... R> constexpr auto chain(R&&...) &;
         template <River... R> constexpr auto chain(R&&...) &&;
+
+        // take(n): requires take.hpp
+        constexpr auto take(int n) &;
+        constexpr auto take(int n) &&;
+
+        // drop(n): requires drop.hpp
+        constexpr auto drop(int n) &;
+        constexpr auto drop(int n) &&;
     };
 }
 

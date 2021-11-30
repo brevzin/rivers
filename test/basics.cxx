@@ -150,3 +150,53 @@ TEST_CASE("chain") {
     auto vec_seq = rvr::from_cpp(a).chain(rvr::seq(4, 7));
     STATIC_REQUIRE(std::same_as<rvr::reference_t<decltype(vec_seq)>, int>);
 }
+
+TEST_CASE("take") {
+    {
+        auto r = rvr::seq(1, 100).take(0);
+        CHECK_FALSE(r.next());
+    }
+
+    {
+        auto r = rvr::seq(1, 100).take(5);
+        CHECK(r.sum() == 15);
+    }
+
+    {
+        auto ints = rvr::seq(1, 00);
+
+        // this one copies ints, doesn't change the original
+        CHECK(ints.take(5).sum() == 15);
+        CHECK(ints.next() == Some(1));
+        ints.reset();
+
+        // this one refers to ints, does change the original
+        CHECK(ints.ref().take(5).sum() == 15);
+        CHECK(ints.next() == Some(6));
+    }
+}
+
+TEST_CASE("drop") {
+    {
+        auto r = rvr::seq(1, 100).drop(0);
+        CHECK(r.next() == Some(1));
+    }
+
+    {
+        auto r = rvr::seq(1, 100).drop(1);
+        CHECK(r.next() == Some(2));
+    }
+
+    {
+        auto r = rvr::seq(1, 100).drop(99);
+        CHECK_FALSE(r.next());
+    }
+
+    {
+        auto ints = rvr::seq(1, 100);
+
+        auto r = ints.ref().drop(5).take(5);
+        CHECK(r.sum() == 40);
+        CHECK(ints.next() == Some(11));
+    }
+}
