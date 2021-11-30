@@ -3,8 +3,8 @@
 
 #include <rivers/core.hpp>
 #include <rivers/from_cpp.hpp>
-#include <rivers/from_values.hpp>
 #include <rivers/map.hpp>
+#include <rivers/of.hpp>
 #include <rivers/seq.hpp>
 
 #endif

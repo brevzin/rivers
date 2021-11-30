@@ -24,8 +24,8 @@ private:
 public:
     using reference = I;
 
-    constexpr Seq(I from, I to) : from(from), to(to) { }
-    constexpr Seq(I to) requires std::default_initializable<I> : to(to) { }
+    explicit constexpr Seq(I from, I to) : from(from), to(to) { }
+    explicit constexpr Seq(I to) requires std::default_initializable<I> : to(to) { }
 
     constexpr auto while_(PredicateFor<reference> auto&& pred) -> bool {
         while (from != to) {

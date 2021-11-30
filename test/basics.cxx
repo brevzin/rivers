@@ -108,7 +108,13 @@ TEST_CASE("map") {
     CHECK(squares2.product() == 576);
 }
 
-TEST_CASE("values") {
+TEST_CASE("of") {
     using namespace std::literals;
-    CHECK(rvr::from_values("hello"s, "world"s).none(&std::string::empty));
+    CHECK(rvr::of("hello"s, "world"s).none(&std::string::empty));
+
+    auto one = rvr::of(1);
+    CHECK(one.next() == Some(1));
+    CHECK_FALSE(one.next());
+    one.reset();
+    CHECK(one.next() == Some(1));
 }
