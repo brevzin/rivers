@@ -3,6 +3,9 @@
 #include <rivers/rivers.hpp>
 #include "nanobench.h"
 #include "flow.hpp"
+#include <range/v3/view/transform.hpp>
+#include <range/v3/view/filter.hpp>
+#include <range/v3/numeric/accumulate.hpp>
 
 int main() {
     namespace an = ankerl::nanobench;
@@ -54,5 +57,15 @@ int main() {
                    .map(triple)
                    .filter(is_even);
             an::doNotOptimizeAway(r.sum());
+        });
+
+
+    bench.run("transform_filter_range-v3",
+        [&]{
+            namespace rv = ranges::views;
+            auto r = bunch_of_ints
+                   | rv::transform(triple)
+                   | rv::filter(is_even);
+            an::doNotOptimizeAway(ranges::accumulate(r, 0));
         });
 }
