@@ -90,12 +90,25 @@ TEST_CASE("input range") {
     std::istringstream iss(s);
     auto r = rvr::from_cpp(std::ranges::istream_view<int>(iss));
     CHECK(r.sum() == 15);
+    CHECK_FALSE(rvr::ResettableRiver<decltype(r)>);
 }
 
 TEST_CASE("map") {
     auto squares = rvr::seq(1, 5)._(rvr::map, [](int i){ return i*i; });
     CHECK(squares.sum() == 30);
+    CHECK(rvr::ResettableRiver<decltype(squares)>);
+    squares.reset();
+    CHECK(squares.next() == Some(1));
+    CHECK(squares.next() == Some(4));
+    CHECK(squares.next() == Some(9));
+    CHECK(squares.next() == Some(16));
+    CHECK_FALSE(squares.next());
 
     auto squares2 = rvr::seq(1, 5).map([](int i){ return i*i; });
     CHECK(squares2.product() == 576);
+}
+
+TEST_CASE("values") {
+    using namespace std::literals;
+    CHECK(rvr::from_values("hello"s, "world"s).none(&std::string::empty));
 }
