@@ -30,6 +30,14 @@ int main() {
             an::doNotOptimizeAway(res);
         });
 
+    bench.run("transform_filter_rivers",
+        [&]{
+            auto r = rvr::from_cpp(bunch_of_ints)
+                   .map(triple)
+                   .filter(is_even);
+            an::doNotOptimizeAway(r.sum());
+        });
+
     bench.run("transform_filter_ranges",
         [&]{
             namespace rv = std::views;
@@ -44,12 +52,13 @@ int main() {
             an::doNotOptimizeAway(res);
         });
 
-    bench.run("transform_filter_rivers",
+    bench.run("transform_filter_range-v3",
         [&]{
-            auto r = rvr::from_cpp(bunch_of_ints)
-                   .map(triple)
-                   .filter(is_even);
-            an::doNotOptimizeAway(r.sum());
+            namespace rv = ranges::views;
+            auto r = bunch_of_ints
+                   | rv::transform(triple)
+                   | rv::filter(is_even);
+            an::doNotOptimizeAway(ranges::accumulate(r, 0));
         });
 
     bench.run("transform_filter_flow",
@@ -58,15 +67,5 @@ int main() {
                    .map(triple)
                    .filter(is_even);
             an::doNotOptimizeAway(r.sum());
-        });
-
-
-    bench.run("transform_filter_range-v3",
-        [&]{
-            namespace rv = ranges::views;
-            auto r = bunch_of_ints
-                   | rv::transform(triple)
-                   | rv::filter(is_even);
-            an::doNotOptimizeAway(ranges::accumulate(r, 0));
         });
 }

@@ -46,14 +46,16 @@ struct {
 } inline constexpr filter;
 
 template <typename Derived>
-template <typename P> requires std::predicate<P&, reference_t<Derived>&>
+template <typename P>
 constexpr auto RiverBase<Derived>::filter(P&& pred) & {
+    static_assert(std::predicate<P&, reference_t<Derived>&>);
     return Filter(self(), RVR_FWD(pred));
 }
 
 template <typename Derived>
-template <typename P> requires std::predicate<P&, reference_t<Derived>&>
+template <typename P>
 constexpr auto RiverBase<Derived>::filter(P&& pred) && {
+    static_assert(std::predicate<P&, reference_t<Derived>&>);
     return Filter(RVR_FWD(self()), RVR_FWD(pred));
 }
 

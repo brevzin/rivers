@@ -237,16 +237,22 @@ namespace rvr {
         }
 
         // map(f): requires map.hpp
-        template <typename F> requires std::invocable<F&, reference_t<Derived>>
+        template <typename F>
         constexpr auto map(F&& f) &;
-        template <typename F> requires std::invocable<F&, reference_t<Derived>>
+        template <typename F>
         constexpr auto map(F&& f) &&;
 
         // filter(p): requires filter.hpp
-        template <typename P = std::identity> requires std::predicate<P&, reference_t<Derived>&>
+        template <typename P = std::identity>
         constexpr auto filter(P&& = {}) &;
-        template <typename P = std::identity> requires std::predicate<P&, reference_t<Derived>&>
+        template <typename P = std::identity>
         constexpr auto filter(P&& = {}) &&;
+
+        // chain(p...): requires chain.hpp
+        template <River... R>
+        constexpr auto chain(R&&...) &;
+        template <River... R>
+        constexpr auto chain(R&&...) &&;
     };
 }
 

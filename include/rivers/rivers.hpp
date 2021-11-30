@@ -3,6 +3,7 @@
 
 #include <rivers/core.hpp>
 
+#include <rivers/chain.hpp>
 #include <rivers/filter.hpp>
 #include <rivers/from_cpp.hpp>
 #include <rivers/map.hpp>

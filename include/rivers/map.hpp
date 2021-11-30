@@ -40,14 +40,16 @@ struct {
 } inline constexpr map;
 
 template <typename Derived>
-template <typename F> requires std::invocable<F&, reference_t<Derived>>
+template <typename F>
 constexpr auto RiverBase<Derived>::map(F&& f) & {
+    static_assert(std::invocable<F&, reference_t<Derived>>);
     return Map(self(), RVR_FWD(f));
 }
 
 template <typename Derived>
-template <typename F> requires std::invocable<F&, reference_t<Derived>>
+template <typename F>
 constexpr auto RiverBase<Derived>::map(F&& f) && {
+    static_assert(std::invocable<F&, reference_t<Derived>>);
     return Map(RVR_FWD(self()), RVR_FWD(f));
 }
 

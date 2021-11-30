@@ -1,5 +1,6 @@
 #include "catch.hpp"
 
+#include <list>
 #include <vector>
 #include <sstream>
 #include <rivers/rivers.hpp>
@@ -128,4 +129,24 @@ TEST_CASE("filter") {
     CHECK(evens.next() == Some(4));
     evens.reset();
     CHECK(evens.sum() == 2450);
+}
+
+TEST_CASE("chain") {
+    std::vector<int> a = {1, 2, 3};
+    std::list<int> b = {4, 5};
+    std::vector<int> c = {6, 7, 8};
+
+    auto chained = rvr::chain(rvr::from_cpp(a), rvr::from_cpp(b), rvr::from_cpp(c));
+    STATIC_REQUIRE(std::same_as<rvr::reference_t<decltype(chained)>, int&>);
+    CHECK(chained.next() == Some(1));
+    CHECK(chained.next() == Some(2));
+    CHECK(chained.next() == Some(3));
+    CHECK(chained.next() == Some(4));
+    CHECK(chained.sum() == 26);
+    CHECK(chained.sum() == 0);
+    chained.reset();
+    CHECK(chained.product() == 40320);
+
+    auto vec_seq = rvr::from_cpp(a).chain(rvr::seq(4, 7));
+    STATIC_REQUIRE(std::same_as<rvr::reference_t<decltype(vec_seq)>, int>);
 }
