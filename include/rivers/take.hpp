@@ -27,12 +27,8 @@ public:
         if (i != n) {
             return base.while_([&](reference elem){
                 ++i;
-                if (not std::invoke(pred, elem) or i == n) {
-                    return false;
-                } else {
-                    return true;
-                }
-            });
+                return std::invoke(pred, elem) and i != n;
+            }) or i == n;
         } else {
             return true;
         }

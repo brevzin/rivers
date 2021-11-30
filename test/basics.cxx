@@ -163,6 +163,18 @@ TEST_CASE("take") {
     }
 
     {
+        auto r = rvr::seq(1, 6).take(5);
+
+        int s = 0;
+        bool b = r.while_([&](int i){
+            s += i;
+            return true;
+        });
+        CHECK(b);
+        CHECK(s == 15);
+    }
+
+    {
         auto ints = rvr::seq(1, 00);
 
         // this one copies ints, doesn't change the original
