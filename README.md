@@ -105,3 +105,7 @@ And several river adapters, that likewise are member functions (but require incl
 
 * [map](#map)
 * [filter](#filter)
+* [take](#take)
+* [drop](#drop)
+* [ref](#ref)
+* [chain](#chain)
