@@ -34,6 +34,10 @@ public:
         }
         return true;
     }
+
+    void reset() {
+        it = std::ranges::begin(base);
+    }
 };
 
 struct from_cpp_fn {

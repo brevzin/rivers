@@ -44,6 +44,10 @@ TEST_CASE("seq") {
     CHECK(ints.sum() == 42);
     CHECK_FALSE(ints.next());
 
+    CHECK(rvr::ResettableRiver<decltype(ints)>);
+    ints.reset();
+    CHECK(ints.next() == Some(1));
+
     CHECK_FALSE(rvr::seq(10).all());
     CHECK(rvr::seq(1, 10).all());
     CHECK_FALSE(rvr::seq(10).all([](int i){ return i % 2 == 0; }));
@@ -65,8 +69,11 @@ TEST_CASE("vector") {
     std::vector v = {1, 2, 3};
     auto r = rvr::from_cpp(v);
     CHECK(std::copyable<decltype(r)>);
+    CHECK(rvr::ResettableRiver<decltype(r)>);
     CHECK(r.sum() == 6);
     CHECK(r.sum() == 0);
+    r.reset();
+    CHECK(r.sum() == 6);
 
     r = rvr::from_cpp(v);
     auto front = r.next_ref();

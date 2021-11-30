@@ -19,6 +19,7 @@ struct Seq : RiverBase<Seq<I>>
 private:
     I from = I();
     I to;
+    I orig = from;
 
 public:
     using reference = I;
@@ -34,6 +35,10 @@ public:
             }
         }
         return true;
+    }
+
+    void reset() {
+        from = orig;
     }
 };
 
