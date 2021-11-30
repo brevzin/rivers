@@ -220,27 +220,33 @@ namespace rvr {
             return init;
         }
 
-        // sum()
-        // * Returns (value() + ... + elems)
+        // sum(init = value())
+        // * Returns (init + ... + elems)
         template <typename D=Derived>
         constexpr auto sum(value_t<D> init = {}) -> value_t<D>
         {
             return fold(RVR_FWD(init), std::plus());
         }
 
-        // product()
-        // * Returns (value(1) * ... * elems)
+        // product(init = value(1))
+        // * Returns (init * ... * elems)
         template <typename D=Derived>
         constexpr auto product(value_t<D> init = value_t<D>(1)) -> value_t<D>
         {
             return fold(RVR_FWD(init), std::multiplies());
         }
 
-        // map(): requires map.hpp
+        // map(f): requires map.hpp
         template <typename F> requires std::invocable<F&, reference_t<Derived>>
         constexpr auto map(F&& f) &;
         template <typename F> requires std::invocable<F&, reference_t<Derived>>
         constexpr auto map(F&& f) &&;
+
+        // filter(p): requires filter.hpp
+        template <typename P = std::identity> requires std::predicate<P&, reference_t<Derived>&>
+        constexpr auto filter(P&& = {}) &;
+        template <typename P = std::identity> requires std::predicate<P&, reference_t<Derived>&>
+        constexpr auto filter(P&& = {}) &&;
     };
 }
 

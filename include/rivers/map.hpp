@@ -18,7 +18,7 @@ private:
 public:
     using reference = std::invoke_result_t<F&, reference_t<R>>;
 
-    Map(R base, F f) : base(std::move(base)), f(std::move(f)) { }
+    constexpr Map(R base, F f) : base(std::move(base)), f(std::move(f)) { }
 
     constexpr auto while_(PredicateFor<reference> auto&& pred) -> bool {
         return base.while_([&](reference e){

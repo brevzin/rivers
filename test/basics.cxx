@@ -1,7 +1,8 @@
 #include "catch.hpp"
-#include <rivers/rivers.hpp>
+
 #include <vector>
 #include <sstream>
+#include <rivers/rivers.hpp>
 
 struct S { };
 static_assert(not rvr::River<S>);
@@ -117,4 +118,14 @@ TEST_CASE("of") {
     CHECK_FALSE(one.next());
     one.reset();
     CHECK(one.next() == Some(1));
+}
+
+TEST_CASE("filter") {
+    auto evens = rvr::seq(100).filter([](int i){ return i % 2 == 0; });
+
+    CHECK(evens.next() == Some(0));
+    CHECK(evens.next() == Some(2));
+    CHECK(evens.next() == Some(4));
+    evens.reset();
+    CHECK(evens.sum() == 2450);
 }

@@ -104,3 +104,4 @@ Several algorithms that are available as member functions on any river (which co
 And several river adapters, that likewise are member functions (but require including an additional header)
 
 * [map](#map)
+* [filter](#filter)
