@@ -73,25 +73,55 @@ int main() {
     auto moar_ints = bunch_of_ints;
     std::reverse(moar_ints.begin(), moar_ints.end());
 
+    bench.run("concat_handwritten", [&]{
+        int res = 0;
+        for (int i : bunch_of_ints) {
+            res += i;
+        }
+        for (int i : moar_ints) {
+            res += i;
+        }
+        an::doNotOptimizeAway(res);
+    });
+
+    bench.run("concat_rivers", [&]{
+        auto r = rvr::from_cpp(bunch_of_ints)
+               .chain(rvr::from_cpp(moar_ints));
+        an::doNotOptimizeAway(r.sum());
+    });
+
+    bench.run("concat_range-v3", [&]{
+        namespace rv = ranges::views;
+        auto r = rv::concat(bunch_of_ints, moar_ints);
+        an::doNotOptimizeAway(ranges::accumulate(r, 0));
+    });
+
+    bench.run("concat_flow", [&]{
+        auto r = flow::chain(flow::from(bunch_of_ints), flow::from(moar_ints));
+        an::doNotOptimizeAway(r.sum());
+    });
+
     bench.run("concat_take_transform_filter_handwritten", [&]{
         int res = 0;
         int take = 1'500'000;
         for (int i : bunch_of_ints) {
-            if (take) {
-                --take;
-                i = triple(i);
-                if (is_even(i)) {
-                    res += i;
-                }
+            if (take == 0) {
+                break;
+            }
+            --take;
+            i = triple(i);
+            if (is_even(i)) {
+                res += i;
             }
         }
         for (int i : moar_ints) {
-            if (take) {
-                --take;
-                i = triple(i);
-                if (is_even(i)) {
-                    res += i;
-                }
+            if (take == 0) {
+                break;
+            }
+            --take;
+            i = triple(i);
+            if (is_even(i)) {
+                res += i;
             }
         }
         an::doNotOptimizeAway(res);
