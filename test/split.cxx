@@ -77,6 +77,10 @@ TEST_CASE("collect each word", "[split]") {
         auto r = rvr::from_cpp(s).split(' ').map([](auto&& word){
             return word.into_vec();
         });
-        CHECK(r.next()->size() == 1);
+        CHECK(r.next() == Some(std::vector{'A'}));
+        CHECK(r.next() == Some(std::vector{'b', 'u', 'n', 'c', 'h'}));
+        CHECK(r.next() == Some(std::vector{'o', 'f'}));
+        CHECK(r.next() == Some(std::vector{'w', 'o', 'r', 'd', 's'}));
+        CHECK_FALSE(r.next());
     }
 }
