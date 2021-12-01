@@ -252,6 +252,13 @@ namespace rvr {
             for_each([](auto&&){});
         }
 
+        // collect<T>() and collect<Z>(): requires collect.hpp
+        template <typename T> constexpr auto collect();
+        template <template <typename...> class Z> constexpr auto collect();
+        constexpr auto into_vec();
+        constexpr auto into_str();
+
+
         ///////////////////////////////////////////////////////////////////
         // and a bunch of river adapters
         ///////////////////////////////////////////////////////////////////

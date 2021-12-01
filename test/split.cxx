@@ -60,3 +60,23 @@ TEST_CASE("multiple delimiters", "[split]") {
     CHECK(counts.next() == Some(0));
     CHECK_FALSE(counts.next());
 }
+
+TEST_CASE("collect each word", "[split]") {
+    using namespace std::literals;
+    std::string s = "A bunch of words";
+    {
+        auto r = rvr::from_cpp(s).split(' ').map(rvr::collect<std::string>);
+        CHECK(r.next() == Some("A"s));
+        CHECK(r.next() == Some("bunch"s));
+        CHECK(r.next() == Some("of"s));
+        CHECK(r.next() == Some("words"s));
+        CHECK_FALSE(r.next());
+    }
+
+    {
+        auto r = rvr::from_cpp(s).split(' ').map([](auto&& word){
+            return word.into_vec();
+        });
+        CHECK(r.next()->size() == 1);
+    }
+}

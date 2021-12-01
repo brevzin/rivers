@@ -4,6 +4,7 @@
 #include <rivers/core.hpp>
 
 #include <rivers/chain.hpp>
+#include <rivers/collect.hpp>
 #include <rivers/drop.hpp>
 #include <rivers/filter.hpp>
 #include <rivers/from_cpp.hpp>
