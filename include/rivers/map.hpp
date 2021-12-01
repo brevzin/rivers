@@ -21,7 +21,7 @@ public:
     constexpr Map(R base, F f) : base(std::move(base)), f(std::move(f)) { }
 
     constexpr auto while_(PredicateFor<reference> auto&& pred) -> bool {
-        return base.while_([&](reference e){
+        return base.while_([&](reference_t<R> e){
             return std::invoke(pred, std::invoke(f, RVR_FWD(e)));
         });
     }

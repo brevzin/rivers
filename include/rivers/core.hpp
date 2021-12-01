@@ -236,6 +236,26 @@ namespace rvr {
             return fold(RVR_FWD(init), std::multiplies());
         }
 
+        // count()
+        // * Returns the number of elements in the river
+        constexpr auto count() -> int
+        {
+            int i = 0;
+            for_each([&](auto&&){ ++i; });
+            return i;
+        }
+
+        // consume()
+        // Draws from the river until it is empty
+        constexpr void consume()
+        {
+            for_each([](auto&&){});
+        }
+
+        ///////////////////////////////////////////////////////////////////
+        // and a bunch of river adapters
+        ///////////////////////////////////////////////////////////////////
+
         // ref(): requires ref.hpp
         constexpr auto ref() &;
 
@@ -258,6 +278,10 @@ namespace rvr {
         // drop(n): requires drop.hpp
         constexpr auto drop(int n) &;
         constexpr auto drop(int n) &&;
+
+        // split(e): requires split.hpp
+        template <typename D=Derived> constexpr auto split(value_t<D>) &;
+        template <typename D=Derived> constexpr auto split(value_t<D>) &&;
     };
 }
 

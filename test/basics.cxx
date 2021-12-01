@@ -4,6 +4,7 @@
 #include <vector>
 #include <sstream>
 #include <rivers/rivers.hpp>
+#include "test_utils.hpp"
 
 struct S { };
 static_assert(not rvr::River<S>);
@@ -17,26 +18,6 @@ static_assert(rvr::River<Ints>);
 static_assert(std::same_as<rvr::reference_t<Ints>, int>);
 static_assert(rvr::River<Ints&>);
 static_assert(not rvr::River<Ints const&>);
-
-namespace Catch {
-    template <typename T>
-    struct StringMaker<tl::optional<T>> {
-        static auto convert(tl::optional<T> const& value) -> std::string {
-            ReusableStringStream rs;
-            if (value) {
-                rs << "Some(" << Detail::stringify(*value) << ')';
-            } else {
-                rs << "None";
-            }
-            return rs.str();
-        }
-    };
-}
-
-template <typename T>
-auto Some(T&& t) -> tl::optional<std::remove_cvref_t<T>> {
-    return RVR_FWD(t);
-}
 
 TEST_CASE("seq") {
     auto ints = rvr::seq(1, 10);
@@ -212,3 +193,4 @@ TEST_CASE("drop") {
         CHECK(ints.next() == Some(11));
     }
 }
+

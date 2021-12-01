@@ -11,6 +11,7 @@
 #include <rivers/of.hpp>
 #include <rivers/ref.hpp>
 #include <rivers/seq.hpp>
+#include <rivers/split.hpp>
 #include <rivers/take.hpp>
 
 #endif
