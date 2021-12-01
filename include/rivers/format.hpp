@@ -2,6 +2,7 @@
 #define RIVERS_FORMAT_HPP
 
 #if __has_include(<fmt/format.h>)
+#include <algorithm>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <rivers/core.hpp>
