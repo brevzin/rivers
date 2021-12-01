@@ -2672,8 +2672,8 @@ constexpr auto RiverBase<Derived>::filter(P&& pred) && {
 }
 
 #endif
-#ifndef RIVERS_FROM_CPP_HPP
-#define RIVERS_FROM_CPP_HPP
+#ifndef RIVERS_FROM_HPP
+#define RIVERS_FROM_HPP
 
 #include <ranges>
 
@@ -2682,12 +2682,12 @@ namespace rvr {
 
 ////////////////////////////////////////////////////////////////////////////
 // Converting a C++ Range to a River
-// * from_cpp(r)           for a range
-// * from_cpp(first, last) for an iterator/sentinel pair
+// * from(r)           for a range
+// * from(first, last) for an iterator/sentinel pair
 // The resulting river is resettable if the source range is forward or better
 ////////////////////////////////////////////////////////////////////////////
 template <std::ranges::input_range R>
-struct FromCpp : RiverBase<FromCpp<R>>
+struct From : RiverBase<From<R>>
 {
 private:
     R base;
@@ -2698,7 +2698,7 @@ public:
     using reference = std::ranges::range_reference_t<R>;
     using value_type = std::ranges::range_value_t<R>;
 
-    constexpr FromCpp(R&& r) : base(std::move(r)) { }
+    constexpr From(R&& r) : base(std::move(r)) { }
 
     constexpr auto while_(PredicateFor<reference> auto&& pred) -> bool {
         while (it != end) {
@@ -2715,30 +2715,30 @@ public:
     }
 };
 
-struct from_cpp_fn {
+struct from_fn {
     template <std::ranges::input_range R>
-    friend constexpr auto tag_invoke(from_cpp_fn, R&& r) {
+    friend constexpr auto tag_invoke(from_fn, R&& r) {
         using U = std::remove_cvref_t<R>;
         if constexpr (std::ranges::view<R>) {
-            return FromCpp<U>(RVR_FWD(r));
+            return From<U>(RVR_FWD(r));
         } else if constexpr (std::is_lvalue_reference_v<R>) {
-            return FromCpp(std::ranges::ref_view(r));
+            return From(std::ranges::ref_view(r));
         } else {
-            return FromCpp(RVR_FWD(r));
+            return From(RVR_FWD(r));
         }
     }
 
     template <typename R>
-        requires tag_invocable<from_cpp_fn, R>
+        requires tag_invocable<from_fn, R>
     constexpr auto operator()(R&& r) const {
         return rvr::tag_invoke(*this, RVR_FWD(r));
     }
 
     template <std::input_iterator I, std::sentinel_for<I> S>
     constexpr auto operator()(I first, S last) const {
-        return FromCpp(std::ranges::subrange(std::move(first), std::move(last)));
+        return From(std::ranges::subrange(std::move(first), std::move(last)));
     }
-} inline constexpr from_cpp;
+} inline constexpr from;
 
 }
 
@@ -2843,12 +2843,12 @@ public:
 struct {
     template <typename T>
     constexpr auto operator()(std::initializer_list<T> values) const {
-        return from_cpp(std::vector(values.begin(), values.end()));
+        return from(std::vector(values.begin(), values.end()));
     }
 
     template <typename... Ts>
     constexpr auto operator()(Ts&&... values) const {
-        return from_cpp(std::vector{values...});
+        return from(std::vector{values...});
     }
 
     // special case a single element

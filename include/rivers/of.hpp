@@ -1,7 +1,8 @@
 #ifndef RIVERS_OF_HPP
 #define RIVERS_OF_HPP
 
-#include <rivers/from_cpp.hpp>
+#include <rivers/core.hpp>
+#include <rivers/from.hpp>
 
 ////////////////////////////////////////////////////////////////////////////
 // Convert specifically provided values to a River
@@ -42,12 +43,12 @@ public:
 struct {
     template <typename T>
     constexpr auto operator()(std::initializer_list<T> values) const {
-        return from_cpp(std::vector(values.begin(), values.end()));
+        return from(std::vector(values.begin(), values.end()));
     }
 
     template <typename... Ts>
     constexpr auto operator()(Ts&&... values) const {
-        return from_cpp(std::vector{values...});
+        return from(std::vector{values...});
     }
 
     // special case a single element

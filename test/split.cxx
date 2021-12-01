@@ -7,7 +7,7 @@
 
 TEST_CASE("count words", "[split]") {
     std::string s = "A bunch of words";
-    auto r = rvr::from_cpp(s).split(' ');
+    auto r = rvr::from(s).split(' ');
 
     using R = decltype(r);
     STATIC_REQUIRE(rvr::River<R>);
@@ -19,7 +19,7 @@ TEST_CASE("count words", "[split]") {
 
 TEST_CASE("count letters with map", "[split]") {
     std::string s = "A bunch of words";
-    auto r = rvr::from_cpp(s).split(' ').map(rvr::count);
+    auto r = rvr::from(s).split(' ').map(rvr::count);
     using R = decltype(r);
     STATIC_REQUIRE(rvr::River<R>);
     STATIC_REQUIRE(std::same_as<rvr::reference_t<R>, int>);
@@ -36,7 +36,7 @@ TEST_CASE("count letters with map", "[split]") {
 
 TEST_CASE("first letter of each word", "[split]") {
     std::string s = "A bunch of words";
-    auto r = rvr::from_cpp(s)
+    auto r = rvr::from(s)
            .split(' ')
            .map([](auto&& word){ return *word.next(); });
 
@@ -54,7 +54,7 @@ TEST_CASE("first letter of each word", "[split]") {
 
 TEST_CASE("multiple delimiters", "[split]") {
     std::string s = "two  words ";
-    auto r = rvr::from_cpp(s).split(' ');
+    auto r = rvr::from(s).split(' ');
     CHECK(r.count() == 4);
     r.reset();
 
@@ -70,7 +70,7 @@ TEST_CASE("collect each word", "[split]") {
     using namespace std::literals;
     std::string s = "A bunch of words";
     {
-        auto r = rvr::from_cpp(s).split(' ').map(rvr::collect<std::string>);
+        auto r = rvr::from(s).split(' ').map(rvr::collect<std::string>);
         CHECK(r.next() == Some("A"s));
         CHECK(r.next() == Some("bunch"s));
         CHECK(r.next() == Some("of"s));
@@ -79,7 +79,7 @@ TEST_CASE("collect each word", "[split]") {
     }
 
     {
-        auto r = rvr::from_cpp(s).split(' ').map(rvr::into_vec);
+        auto r = rvr::from(s).split(' ').map(rvr::into_vec);
         CHECK(r.next() == Some(std::vector{'A'}));
         CHECK(r.next() == Some(std::vector{'b', 'u', 'n', 'c', 'h'}));
         CHECK(r.next() == Some(std::vector{'o', 'f'}));
@@ -90,7 +90,7 @@ TEST_CASE("collect each word", "[split]") {
 
 TEST_CASE("count after next", "[split]") {
     std::string s = "A bunch of words";
-    auto r = rvr::from_cpp(s).split(' ');
+    auto r = rvr::from(s).split(' ');
 
     CHECK(r.next().map(rvr::count) == Some(1));
     CHECK(r.next().map(rvr::count) == Some(5));

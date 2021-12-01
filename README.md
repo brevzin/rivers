@@ -6,7 +6,7 @@ This is a C++20 library inspired by Java's [Streams](https://docs.oracle.com/jav
 
 ## Basics
 
-While C++ Ranges are externally iterated, this library is internally iterated. This makes for a simpler model which can have better performance, although it also means it is fundamentally extremely limited in functionality. It's pretty similar to the [transrangers](https://github.com/joaquintides/transrangers), I will point out differences later.
+While C++ Ranges are externally iterated, this library is internally iterated. This makes for a simpler model which can have better performance, although it also means it is fundamentally extremely limited in functionality. It's pretty similar to the [transrangers](https://github.com/joaquintides/transrangers), which also contains a good description of what the model is and why it could be beneficial. The primary difference is that in transrangers, the consuming predicate receives a _cursor_ that dereferences into an element whereas in this library, the consuming predicate receives the element itself - this is to avoid situations like a `map` followed by a `filter` potentially invoking the `map` operation multiple times.
 
 A River is a class that provides, at a bare minimum, two pieces of functionality:
 
@@ -89,7 +89,7 @@ The library provides a few ways to generate a river:
 
 * [seq](#seq)
 * [of](#of)
-* [from_cpp](#from_cpp)
+* [from](#from)
 
 Several algorithms that are available as member functions on any river (which come from inheriting from the CRTP base class `rvr::RiverBase`)
 

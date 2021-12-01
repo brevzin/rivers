@@ -50,7 +50,7 @@ TEST_CASE("seq") {
 
 TEST_CASE("vector") {
     std::vector v = {1, 2, 3};
-    auto r = rvr::from_cpp(v);
+    auto r = rvr::from(v);
     CHECK(std::copyable<decltype(r)>);
     CHECK(rvr::ResettableRiver<decltype(r)>);
     CHECK(r.sum() == 6);
@@ -58,20 +58,20 @@ TEST_CASE("vector") {
     r.reset();
     CHECK(r.sum() == 6);
 
-    r = rvr::from_cpp(v);
+    r = rvr::from(v);
     auto front = r.next_ref();
     REQUIRE(front);
     CHECK(&*front == v.data());
 
     // rvalue? takes ownership, no dangling here
-    auto r2 = rvr::from_cpp(std::vector{3, 4, 5});
+    auto r2 = rvr::from(std::vector{3, 4, 5});
     CHECK(r2.product() == 60);
 }
 
 TEST_CASE("input range") {
     std::string s = "1 2 3 4 5";
     std::istringstream iss(s);
-    auto r = rvr::from_cpp(std::ranges::istream_view<int>(iss));
+    auto r = rvr::from(std::ranges::istream_view<int>(iss));
     CHECK(r.sum() == 15);
     CHECK_FALSE(rvr::ResettableRiver<decltype(r)>);
 }
@@ -117,7 +117,7 @@ TEST_CASE("chain") {
     std::list<int> b = {4, 5};
     std::vector<int> c = {6, 7, 8};
 
-    auto chained = rvr::chain(rvr::from_cpp(a), rvr::from_cpp(b), rvr::from_cpp(c));
+    auto chained = rvr::chain(rvr::from(a), rvr::from(b), rvr::from(c));
     STATIC_REQUIRE(std::same_as<rvr::reference_t<decltype(chained)>, int&>);
     CHECK(chained.next() == Some(1));
     CHECK(chained.next() == Some(2));
@@ -128,7 +128,7 @@ TEST_CASE("chain") {
     chained.reset();
     CHECK(chained.product() == 40320);
 
-    auto vec_seq = rvr::from_cpp(a).chain(rvr::seq(4, 7));
+    auto vec_seq = rvr::from(a).chain(rvr::seq(4, 7));
     STATIC_REQUIRE(std::same_as<rvr::reference_t<decltype(vec_seq)>, int>);
 }
 
