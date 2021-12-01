@@ -33,7 +33,7 @@ int main() {
 
     bench.run("transform_filter_rivers",
         [&]{
-            auto r = rvr::from_cpp(bunch_of_ints)
+            auto r = rvr::from(bunch_of_ints)
                    .map(triple)
                    .filter(is_even);
             an::doNotOptimizeAway(r.sum());
@@ -85,8 +85,8 @@ int main() {
     });
 
     bench.run("concat_rivers", [&]{
-        auto r = rvr::from_cpp(bunch_of_ints)
-               .chain(rvr::from_cpp(moar_ints));
+        auto r = rvr::from(bunch_of_ints)
+               .chain(rvr::from(moar_ints));
         an::doNotOptimizeAway(r.sum());
     });
 
@@ -128,8 +128,8 @@ int main() {
     });
 
     bench.run("concat_take_transform_filter_rivers", [&]{
-        auto r = rvr::from_cpp(bunch_of_ints)
-               .chain(rvr::from_cpp(moar_ints))
+        auto r = rvr::from(bunch_of_ints)
+               .chain(rvr::from(moar_ints))
                .take(1'500'000)
                .map(triple)
                .filter(is_even);

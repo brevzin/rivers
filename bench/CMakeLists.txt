@@ -8,5 +8,5 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(range-v3)
 
-add_executable(benchmark benchmark.cxx)
+add_executable(benchmark EXCLUDE_FROM_ALL benchmark.cxx)
 target_link_libraries(benchmark PUBLIC rivers range-v3)
