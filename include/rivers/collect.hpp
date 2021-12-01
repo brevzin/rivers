@@ -1,5 +1,5 @@
-#ifndef RANGES_COLLECT_HPP
-#define RANGES_COLLECT_HPP
+#ifndef RIVERS_COLLECT_HPP
+#define RIVERS_COLLECT_HPP
 
 #include <rivers/core.hpp>
 #include <rivers/tag_invoke.hpp>

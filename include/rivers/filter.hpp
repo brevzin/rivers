@@ -1,5 +1,5 @@
-#ifndef RANGES_FILTER_HPP
-#define RANGES_FILTER_HPP
+#ifndef RIVERS_FILTER_HPP
+#define RIVERS_FILTER_HPP
 
 #include <rivers/core.hpp>
 

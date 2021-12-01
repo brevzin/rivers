@@ -1,5 +1,5 @@
-#ifndef RANGES_SPLIT_HPP
-#define RANGES_SPLIT_HPP
+#ifndef RIVERS_SPLIT_HPP
+#define RIVERS_SPLIT_HPP
 
 #include <rivers/core.hpp>
 #include <rivers/ref.hpp>

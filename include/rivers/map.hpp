@@ -1,5 +1,5 @@
-#ifndef RANGES_MAP_HPP
-#define RANGES_MAP_HPP
+#ifndef RIVERS_MAP_HPP
+#define RIVERS_MAP_HPP
 
 #include <rivers/core.hpp>
 
