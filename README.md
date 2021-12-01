@@ -1,5 +1,7 @@
 # Rivers
 
+![example](https://github.com/BRevzin/rivers/actions/workflows/ci.yml/badge.svg)
+
 This is a C++20 library inspired by Java's [Streams](https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html). It's called Rivers solely because it allows the namespace `rvr`, which looks a lot like `rv` - which is the typical abbreviated namespace for `ranges::views`.
 
 ## Basics
