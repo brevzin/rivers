@@ -19,7 +19,7 @@ TEST_CASE("count words", "[split]") {
 
 TEST_CASE("count letters with map", "[split]") {
     std::string s = "A bunch of words";
-    auto r = rvr::from_cpp(s).split(' ').map([](auto&& word){ return word.count(); });
+    auto r = rvr::from_cpp(s).split(' ').map(rvr::count);
     using R = decltype(r);
     STATIC_REQUIRE(rvr::River<R>);
     STATIC_REQUIRE(std::same_as<rvr::reference_t<R>, int>);
@@ -39,6 +39,11 @@ TEST_CASE("first letter of each word", "[split]") {
     auto r = rvr::from_cpp(s)
            .split(' ')
            .map([](auto&& word){ return *word.next(); });
+
+    using R = decltype(r);
+    STATIC_REQUIRE(rvr::River<R>);
+    STATIC_REQUIRE(std::same_as<rvr::reference_t<R>, char>);
+
 
     CHECK(r.next() == Some('A'));
     CHECK(r.next() == Some('b'));
@@ -74,13 +79,19 @@ TEST_CASE("collect each word", "[split]") {
     }
 
     {
-        auto r = rvr::from_cpp(s).split(' ').map([](auto&& word){
-            return word.into_vec();
-        });
+        auto r = rvr::from_cpp(s).split(' ').map(rvr::into_vec);
         CHECK(r.next() == Some(std::vector{'A'}));
         CHECK(r.next() == Some(std::vector{'b', 'u', 'n', 'c', 'h'}));
         CHECK(r.next() == Some(std::vector{'o', 'f'}));
         CHECK(r.next() == Some(std::vector{'w', 'o', 'r', 'd', 's'}));
         CHECK_FALSE(r.next());
     }
+}
+
+TEST_CASE("count after next", "[split]") {
+    std::string s = "A bunch of words";
+    auto r = rvr::from_cpp(s).split(' ');
+
+    CHECK(r.next().map(rvr::count) == Some(1));
+    CHECK(r.next().map(rvr::count) == Some(5));
 }

@@ -66,6 +66,9 @@ constexpr auto RiverBase<Derived>::into_str() {
     return collect<std::string>();
 }
 
+inline constexpr auto into_vec = [](River auto&& r){ return r.into_vec(); };
+inline constexpr auto into_str = [](River auto&& r){ return r.into_str(); };
+
 
 }
 

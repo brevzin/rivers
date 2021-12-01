@@ -15,57 +15,57 @@ template <River R>
 struct Split : RiverBase<Split<R>>
 {
 private:
-    R base;
-    value_t<R> delim;
-    bool exhausted = false;
-
-public:
     struct Inner : RiverBase<Inner>
     {
+    private:
+        friend Split;
         Split* parent;
         bool found_delim = false;
 
+    public:
         using reference = reference_t<R>;
+        explicit Inner(Split* p) : parent(p) { }
 
-        constexpr auto while_(PredicateFor<reference> auto&& pred) -> bool {
-            if (found_delim) {
-                return true;
-            }
-
-            bool result = parent->base.while_([&](reference elem){
-                if (elem == parent->delim) {
-                    found_delim = true;
-                    return false;
-                } else {
-                    return std::invoke(pred, elem);
-                }
-            });
-
-            if (result and not found_delim) {
-                parent->exhausted = true;
-            }
-            return result;
-        }
+        constexpr auto while_(PredicateFor<reference> auto&& pred) -> bool;
     };
 
+    R base;
+    value_t<R> delim;
+    bool exhausted = false;
+    bool partial = false;
+    Inner inner;
+
+public:
     using reference = Ref<Inner>;
 
-    constexpr Split(R base, value_t<R> delim) : base(std::move(base)), delim(std::move(delim)) { }
+    constexpr Split(R base, value_t<R> delim)
+        : base(std::move(base))
+        , delim(std::move(delim))
+        , inner(this)
+    { }
 
     constexpr auto while_(PredicateFor<reference> auto&& pred) -> bool {
         if (exhausted) {
             return true;
         }
 
+        if (partial) {
+            inner.consume();
+            if (exhausted) {
+                return true;
+            }
+            partial = false;
+        }
+
         for (;;) {
-            auto inner = Inner{{}, this};
+            inner = Inner(this);
             if (std::invoke(pred, inner.ref())) {
                 inner.consume();
                 if (exhausted) {
                     return true;
                 }
             } else {
-                inner.consume();
+                partial = not inner.found_delim;
                 return false;
             }
         }
@@ -76,6 +76,27 @@ public:
         exhausted = false;
     }
 };
+
+template <River R>
+constexpr auto Split<R>::Inner::while_(PredicateFor<reference> auto&& pred) -> bool {
+    if (found_delim) {
+        return true;
+    }
+
+    bool result = parent->base.while_([&](reference elem){
+        if (elem == parent->delim) {
+            found_delim = true;
+            return false;
+        } else {
+            return std::invoke(pred, elem);
+        }
+    });
+
+    if (result and not found_delim) {
+        parent->exhausted = true;
+    }
+    return result;
+}
 
 struct {
     template <River R>
