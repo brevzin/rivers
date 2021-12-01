@@ -15,4 +15,6 @@
 #include <rivers/split.hpp>
 #include <rivers/take.hpp>
 
+#include <rivers/format.hpp>
+
 #endif
