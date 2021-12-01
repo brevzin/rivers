@@ -6,6 +6,7 @@
 #include <rivers/optional.hpp>
 
 #define RVR_FWD(x) static_cast<decltype(x)&&>(x)
+#define RVR_RETURNS(e) -> decltype(e) { return e; }
 
 namespace rvr {
 
@@ -293,7 +294,22 @@ public:
 };
 
 // and in non-member, callable form
-inline constexpr auto count = [](River auto&& r) { return r.count(); };
+#define RVR_ALGO_FUNCTION_OBJECT(name)                                 \
+    inline constexpr auto name =                           \
+        [](River auto&& r, auto&&... args)                 \
+            RVR_RETURNS(RVR_FWD(r).name(RVR_FWD(args)...))
+
+RVR_ALGO_FUNCTION_OBJECT(all);
+RVR_ALGO_FUNCTION_OBJECT(any);
+RVR_ALGO_FUNCTION_OBJECT(none);
+RVR_ALGO_FUNCTION_OBJECT(for_each);
+RVR_ALGO_FUNCTION_OBJECT(next);
+RVR_ALGO_FUNCTION_OBJECT(next_ref);
+RVR_ALGO_FUNCTION_OBJECT(fold);
+RVR_ALGO_FUNCTION_OBJECT(sum);
+RVR_ALGO_FUNCTION_OBJECT(product);
+RVR_ALGO_FUNCTION_OBJECT(count);
+RVR_ALGO_FUNCTION_OBJECT(consume);
 
 }
 
