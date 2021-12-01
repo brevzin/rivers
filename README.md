@@ -1,3 +1,37 @@
+- [Rivers](#rivers)
+  - [Basics](#basics)
+  - [Characteristics](#characteristics)
+  - [Formatting](#formatting)
+  - [Single Header](#single-header)
+  - [Generators](#generators)
+    - [seq](#seq)
+    - [of](#of)
+    - [from](#from)
+  - [Extension](#extension)
+  - [Terminal Algorithms](#terminal-algorithms)
+    - [all](#all)
+    - [any](#any)
+    - [none](#none)
+    - [for_each](#for_each)
+    - [next](#next)
+    - [next_ref](#next_ref)
+    - [fold](#fold)
+    - [sum](#sum)
+    - [product](#product)
+    - [count](#count)
+    - [consume](#consume)
+    - [collect](#collect)
+    - [into_vec](#into_vec)
+    - [into_str](#into_str)
+  - [River Adapters](#river-adapters)
+    - [ref](#ref)
+    - [map](#map)
+    - [filter](#filter)
+    - [chain](#chain)
+    - [take](#take)
+    - [drop](#drop)
+    - [split](#split)
+
 # Rivers
 
 [![example](https://github.com/BRevzin/rivers/actions/workflows/ci.yml/badge.svg)](https://github.com/BRevzin/rivers/actions/workflows/ci.yml)
@@ -83,38 +117,138 @@ public:
 
 We have to have the iterator and sentinel as members in order to satisfy the statefulness of `while_`. For forward-or-better ranges, `reset()`ing is a simple call to `begin` on the range that we have to hold onto anyway. But input ranges are single-pass, so in this case we do not provide a `reset`.
 
-## Provided Algorithms
+## Formatting
 
-The library provides a few ways to generate a river:
+A formatter is provided for rivers under the header `rivers/format.hpp`. It presumes that `<fmt/format.hpp>` can be found as an include. Otherwise, it does nothing. The examples for the algorithms below will all use formatting to demonstrate the functionality. Formatting support is based on [P2286](https://wg21.link/p2286).
 
-* [seq](#seq)
-* [of](#of)
-* [from](#from)
+## Single Header
 
-Several algorithms that are available as member functions on any river (which come from inheriting from the CRTP base class `rvr::RiverBase`)
+A single header version can be found [here](single_include/rivers/single_header.hpp).
 
-* [_](#_)
-* [all](#all)
-* [any](#any)
-* [none](#none)
-* [for_each](#for_each)
-* [next](#next)
-* [next_ref](#next_ref)
-* [fold](#fold)
-* [sum](#sum)
-* [product](#product)
-* [count](#count)
-* [consume](#consume)
-* [collect](#collect)
-* [into_vec](#into_vec)
-* [into_str](#into_str)
+## Generators
 
-And several river adapters, that likewise are member functions (but require including an additional header)
+### seq
 
-* [ref](#ref)
-* [map](#map)
-* [filter](#filter)
-* [chain](#chain)
-* [take](#take)
-* [drop](#drop)
-* [split](#drop)
+There are two overloads of `seq`:
+
+* `seq(from, to)` produces a river that iterates from `from` up to, but not including, `to`.
+* `seq(to)` produces a river that iterates from `I(0)` up to, but not including, `to`, where `I` is the type of `to`.
+
+Similarly to `views::iota`, this river generator can accept any type that is `weakly_incrementable` and `equality_comparable`. Differently from `views::iota`, and more like Python's `range`, `seq(5)` produces the range `[0, 5)` rather than the range `[5, inf)`.
+
+```cpp
+fmt::print("{}\n", rvr::seq(1, 5)); // [1, 2, 3, 4]
+fmt::print("{}\n", rvr::seq(3));    // [0, 1, 2]
+```
+
+### of
+
+`of` is used to construct a river with the specified elements.
+
+There are three overloads of `of`:
+
+* `of({x, y, z})` (taking an `initializer_list<T>`) produces a river containing those elements (internally constructing a `vector` to hold them)
+* `of(x, y, z)` does the same
+* `of(x)` is a special case for just the single element
+
+```cpp
+fmt::print("{}\n", rvr::of(1, 9, 16)); // [1, 9, 16]
+```
+
+### from
+
+`from` is used to turn a C++ range into a river. `from(e)` does one of:
+
+* copies/moves `e`, if `e` is a `view`
+* constructs a `ref_view(e)` if `e` is an lvalue, and constructs a river out of that
+* moves `e` in, if `e` is a non-`view` range
+
+This follows the [P2415](https://wg21.link/p2415) design for `views::all` in C++20 ranges.
+
+## Extension
+
+The library is written so that all the river adapters and terminal algorithms can be invoked with `.` notation. That is, `r.map(f).filter(g).any()` rather than the C++20 equivalent of `ranges::any_of(r | views::transform(f) | views::filter(g), std::identity())`. That's very convenient if you only use algorithms provided by the library, but not so convenient if you want to... do something else.
+
+To that end, `RiverBase` provides a `_` member function such that `r._(f, args...)` evaluates as `f(r, args...)`. This is a heavily simplified version of the `|` support that range-v3/C++20 Ranges provide, and also doesn't require any notion of "partial call".
+
+The library provides function objects for each algorithm as well. So these are all equivalent:
+
+1. `r.map(f)`
+2. `rvr::map(r, f)`
+3. `r._(rvr::map, f)`
+
+I don't imagine anybody would prefer (3) to (1) or (2) for `map` specifically, but the existence of the syntax allows for a more convenient flow with user-defined river adapters.
+
+## Terminal Algorithms
+
+These are the point of Streams - is to run a terminal algorithm more efficiently than you could with either of the C++, D, or Rust iteration models.
+
+
+### all
+
+TODO
+
+### any
+
+TODO
+
+### none
+
+TODO
+
+### for_each
+
+TODO
+
+### next
+
+TODO
+
+### next_ref
+
+TODO
+
+### fold
+
+TODO
+
+### sum
+
+TODO
+
+### product
+
+TODO
+
+### count
+
+TODO
+
+### consume
+
+TODO
+
+### collect
+
+TODO
+
+### into_vec
+
+TODO
+
+### into_str
+
+TODO
+
+## River Adapters
+
+These are algorithms that take one River and produce another River.
+
+
+### ref
+### map
+### filter
+### chain
+### take
+### drop
+### split
