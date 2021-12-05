@@ -3,6 +3,7 @@ file(GLOB sources CONFIGURE_DEPENDS *.cxx)
 set(sources
     main.cxx
     split.cxx
+    basics.cxx
     value_type.cxx)
 
 if(RVR_IMPORT_FMT)

@@ -7,6 +7,7 @@
 #include <rivers/collect.hpp>
 #include <rivers/drop.hpp>
 #include <rivers/filter.hpp>
+#include <rivers/from_stream.hpp>
 #include <rivers/from.hpp>
 #include <rivers/map.hpp>
 #include <rivers/of.hpp>

@@ -70,10 +70,22 @@ TEST_CASE("vector") {
 
 TEST_CASE("input range") {
     std::string s = "1 2 3 4 5";
-    std::istringstream iss(s);
-    auto r = rvr::from(std::ranges::istream_view<int>(iss));
-    CHECK(r.sum() == 15);
-    CHECK_FALSE(rvr::ResettableRiver<decltype(r)>);
+
+    {
+        std::istringstream iss(s);
+        auto r = rvr::from(std::ranges::istream_view<int>(iss));
+        CHECK(r.sum() == 15);
+        CHECK_FALSE(rvr::ResettableRiver<decltype(r)>);
+    }
+
+    {
+        std::istringstream iss(s);
+        CHECK(rvr::from_stream<int>(iss).take(3).count() == 3);
+
+        int i;
+        CHECK(iss >> i);
+        CHECK(i == 4);
+    }
 }
 
 TEST_CASE("map") {
