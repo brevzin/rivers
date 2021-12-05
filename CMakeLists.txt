@@ -18,7 +18,7 @@ if(RVR_IMPORT_FMT)
         fmt
         GIT_REPOSITORY https://github.com/fmtlib/fmt.git
         GIT_TAG 713c7c7c62044329d26c19323ffa0e64d69d2d64
-        GIT_SHALLOW TRUE)
+        )
     FetchContent_MakeAvailable(fmt)
 
     target_link_libraries(rivers INTERFACE fmt::fmt)
