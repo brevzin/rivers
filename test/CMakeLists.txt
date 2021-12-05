@@ -1,13 +1,7 @@
 file(GLOB sources CONFIGURE_DEPENDS *.cxx)
 
-set(sources
-    main.cxx
-    split.cxx
-    basics.cxx
-    value_type.cxx)
-
-if(RVR_IMPORT_FMT)
-    list(APPEND sources fmt.cxx)
+if(NOT RVR_IMPORT_FMT)
+    list(REMOVE_ITEM sources ${CMAKE_CURRENT_SOURCE_DIR}/fmt.cxx)
 endif()
 
 add_executable(rivers-test ${sources})
